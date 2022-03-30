@@ -1,41 +1,40 @@
 import * as React from 'react';
 
-  
-const list = [
-  {
-    title: 'React',
-    url: 'https://reactjs.org/',
-    author: 'Jordan Walke',
-    num_comments: 3,
-    points: 4,
-    objectID: "yell",
-}, {
-    title: 'Redux',
-    url: 'https://redux.js.org/',
-    author: 'Dan Abramov, Andrew Clark',
-    num_comments: 2,
-    points: 5,
-    objectID: 1,
-},]
-
 const App = () => {
+  const stories = [
+    {
+      title: 'React',
+      url: 'https://reactjs.org/',
+      author: 'Jordan Walke',
+      num_comments: 3,
+      points: 4,
+      objectID: "yell",
+  }, {
+      title: 'Redux',
+      url: 'https://redux.js.org/',
+      author: 'Dan Abramov, Andrew Clark',
+      num_comments: 2,
+      points: 5,
+      objectID: 1,
+  },
+  ]
+  
   return (
     <div>
           <h1> My Hacker Stories</h1>
-          <Search/>
+          <Search /> 
           <hr/>
-          <List/>
+          <List list={stories}/>{/*passing props into a component. variable assigned to the list html attribute */}
     </div>
   );
 };
 
 //Search component
 const Search = () => {
-  //event handler for onChange
+  // callback /event handler for onChange
   const handleChange = (event) => {
     console.log(event)
   }  
-
   return(
     <div>
       <label htmlFor="search"> Search </label>
@@ -45,29 +44,38 @@ const Search = () => {
 }
 
 //List component
-const List = () => 
+const List = (props) => {
+//receiving props (object parameter) in a compnent. 
+//props is an object and includes all the passed attributes as properties.
+return(
     <ul>
-      {list.map((item) => (
-          <li key={item.objectID}>
-            <span>
-              <a href={item.url}> {item.title}</a>
-            </span>
-            <span>{item.author} </span>
-            <span>{item.num_comments}</span>
-            <span>{item.points}</span>
-          </li>
-   
-      ))}
+      {props.list.map((item) => {
+        return(
+          //Item component
+          <Item key={item.objectID} item={item} /> //passing item in each iteration
+        )
+      })}
     </ul>
+)
+} 
+
+const Item = (props) => {
+  return(
+    <li key={props.item.objectID}>
+      <span>
+        <a href={props.item.url}> {props.item.title}</a>
+      </span>
+      <span>{props.item.author} </span>
+      <span>{props.item.num_comments}</span>
+      <span>{props.item.points}</span>
+    </li>
+  );
+}
 
 
 
 export default App
 
-//callback handler
- // const handleSearch = (event) => {
- //   console.log(event.target.value);
- // }
  /* search componenet can use this callback handler now*/
 
  /* JS in HTML can pass fucntions to HTML element's attributes for handling user interactions
@@ -78,3 +86,4 @@ export default App
         ** Always pass fucntions (function handleChange), not a return value, to the handler (onChange)
         ex This is no no onChange={handleChange()} */
 
+        
