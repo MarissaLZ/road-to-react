@@ -31,14 +31,19 @@ const App = () => {
 
 //Search component
 const Search = () => {
+  const [searchTerm, setSearchTerm] = React.useState('')
+
+
   // callback /event handler for onChange
   const handleChange = (event) => {
-    console.log(event)
-  }  
+    setSearchTerm(event.target.value);
+  };  
   return(
     <div>
       <label htmlFor="search"> Search </label>
       <input id="search" type="text" onChange={handleChange}/>
+
+      <p> You are searching for {searchTerm }</p>
     </div>
   );
 }
@@ -75,8 +80,6 @@ const Item = (props) => {
 
 
 export default App
-
- /* search componenet can use this callback handler now*/
 
  /* JS in HTML can pass fucntions to HTML element's attributes for handling user interactions
         
