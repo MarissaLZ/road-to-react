@@ -58,12 +58,18 @@ const Search = ({search, onSearch}) => { //destrucuturing props within function 
 //instead of props.list
 const List = ({list}) => {
 //receiving props an object and includes all the passed attributes as properties.
-  return(
-      <ul>
-        {list.map((item) => {
+  console.log(list)
+return(
+      <ul> {/* item is an object. destructuring item object*/}
+        {list.map(({ objectID, ...item }) => {
           return(
             //Item component
-            <Item key={item.objectID} item={item} /> //passing item in each iteration
+            //passing item in each iteration
+            //using spread operator to pass all the object's key/value pairs 
+            //as attribute/value pairs to jsx element
+       
+            <Item key={objectID} {...item} /> //*what is the difference b/w {...item} and {item}
+     
           )
         })}
       </ul>
@@ -71,7 +77,7 @@ const List = ({list}) => {
 } 
 //Item component
 //destructures props which is an object withiin and object {item: {…}}
-const Item = ({ item: { title, url, author, num_comments, points, objectID }}) => {
+const Item = ({ title, url, author, num_comments, points, objectID }) => {
   return(
     <li key={objectID}>
       <span>
