@@ -1,5 +1,14 @@
 import * as React from 'react';
 
+const useSemiPersistentState = (key, initialState) => {
+  const[value, setValue] = React.useState(localStorage.getItem(key) || initialState)
+
+  React.useEffect( () => {
+    localStorage.setItem(key, value);
+  }, [value, key])
+  return [value, setValue]
+}
+
 const App = () => {
 
   const stories = [
@@ -19,9 +28,9 @@ const App = () => {
       objectID: 1,
     },
   ]
-  const [searchTerm, setSearchTerm] = React.useState('React')
-  console.log("SearchTerm is :" + searchTerm)
-
+  //custom hook
+  const [searchTerm, setSearchTerm] = useSemiPersistentState("search","React")
+  
   const handleSearch = (event) => {
     setSearchTerm(event.target.value)
   };
@@ -56,36 +65,31 @@ const Search = ({search, onSearch}) => { //destrucuturing props within function 
 
 //List component destrucuturing props within fucntion and can directly use list
 //instead of props.list
-const List = ({list}) => {
-//receiving props an object and includes all the passed attributes as properties.
+const List = ({ list }) => {
   console.log(list)
-return(
-      <ul> {/* item is an object. destructuring item object*/}
-        {list.map(({ objectID, ...item }) => {
-          return(
-            //Item component
-            //passing item in each iteration
-            //using spread operator to pass all the object's key/value pairs 
-            //as attribute/value pairs to jsx element
-       
-            <Item key={objectID} {...item} /> //*what is the difference b/w {...item} and {item}
-     
-          )
-        })}
-      </ul>
-  )
+  return(
+        <ul> 
+          {list.map((item) => {
+            return(
+              //Item component
+              //passing item in each iteration
+              <Item key={item.objectID} item={item}/>
+            )
+          })}
+        </ul>
+    )
 } 
 //Item component
 //destructures props which is an object withiin and object {item: {…}}
-const Item = ({ title, url, author, num_comments, points, objectID }) => {
+const Item = ({ item }) => {
   return(
-    <li key={objectID}>
+    <li>
       <span>
-        <a href={url}> {title}</a>
+        <a href={item.url}>{item.title}</a>
       </span>
-      <span>{author} </span>
-      <span>{num_comments}</span>
-      <span>{points}</span>
+      <span>{item.author}</span>
+      <span>{item.num_comments}</span>
+      <span>{item.points}</span>
     </li>
   );
 }
