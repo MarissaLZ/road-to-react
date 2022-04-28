@@ -9,71 +9,84 @@ const useSemiPersistentState = (key, initialState) => {
   return [value, setValue]
 }
 
-const App = () => {
+const initialStories = [
+  {
+    title: 'React',
+    url: 'https://reactjs.org/',
+    author: 'Jordan Walke',
+    num_comments: 3,
+    points: 4,
+    objectID: "yell",
+  }, {
+    title: 'Redux',
+    url: 'https://redux.js.org/',
+    author: 'Dan Abramov, Andrew Clark',
+    num_comments: 2,
+    points: 5,
+    objectID: 1,
+  },
+]
 
-  const stories = [
-    {
-      title: 'React',
-      url: 'https://reactjs.org/',
-      author: 'Jordan Walke',
-      num_comments: 3,
-      points: 4,
-      objectID: "yell",
-    }, {
-      title: 'Redux',
-      url: 'https://redux.js.org/',
-      author: 'Dan Abramov, Andrew Clark',
-      num_comments: 2,
-      points: 5,
-      objectID: 1,
-    },
-  ]
+const App = () => {
   //custom hook
   const [searchTerm, setSearchTerm] = useSemiPersistentState("search","React")
+   //state hook
+   const [stories, setStories] = React.useState(initialStories)
   
   const handleSearch = (event) => {
     setSearchTerm(event.target.value)
   };
+  const handleRemoveStory= (item) => {
+    const newStories = stories.filter(
+      (story) => item.objectID !== story.objectID
+    )
+    setStories(newStories)
+  }
 
   const searchedStories = stories.filter(function (story) {
     return story.title.toLowerCase().includes(searchTerm.toLowerCase())
   });
+
   return (
     <div>
           <h1> My Hacker Stories</h1>
-          <Search search={searchTerm} onSearch={handleSearch} /> 
+          <InputWithLabel id="search" value={searchTerm} isFocused onInputChange={handleSearch}>
+            <strong>Search for:</strong>
+          </InputWithLabel>
           <hr/>
-          <List list={searchedStories}/>{/*passing props into a component. variable assigned to the list html attribute */}
+          <List list={searchedStories} onRemoveItem ={handleRemoveStory}/>{/*passing props into a component. variable assigned to the list html attribute */}
     </div>
   );
 };
+//InputWithLabel component
+const InputWithLabel = ({id, value, type="text", onInputChange, isFocused, children}) => {
+  
+  //ref hook. creates a ref w/propert
+  const inputRef = React.useRef()
 
-//Search component
-const Search = ({search, onSearch}) => { //destrucuturing props within function signature
+  React.useEffect(() => {
+    if (isFocused && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isFocused]);
 
   return(
-    <div>
-      <label htmlFor="search"> Search </label>
-      <input 
-      id="search" 
-      type="text" 
-      value={search}
-      onChange={onSearch}/>
-    </div>
-  );
+  <>
+    <label htmlFor={id}>{children}</label> &nbsp;
+    <input id={id} ref={inputRef} type={type} value={value} onChange={onInputChange}/>
+  </>
+  )
 }
-
 //List component destrucuturing props within fucntion and can directly use list
 //instead of props.list
-const List = ({ list }) => {
-  console.log(list)
+const List = ({ list, onRemoveItem}) => {
   return(
         <ul> 
           {list.map((item) => {
             return(
               //Item component
               //passing item in each iteration
-              <Item key={item.objectID} item={item}/>
+              <Item key={item.objectID} item={item} onRemoveItem={onRemoveItem}/>
             )
           })}
         </ul>
@@ -81,7 +94,7 @@ const List = ({ list }) => {
 } 
 //Item component
 //destructures props which is an object withiin and object {item: {…}}
-const Item = ({ item }) => {
+const Item = ({ item, onRemoveItem }) => {
   return(
     <li>
       <span>
@@ -90,12 +103,11 @@ const Item = ({ item }) => {
       <span>{item.author}</span>
       <span>{item.num_comments}</span>
       <span>{item.points}</span>
+      <span>
+        <button type="button" onClick={() => onRemoveItem(item) }>Dismiss</button>
+      </span>
     </li>
   );
 }
 export default App
-
- /* JS in HTML can pass fucntions to HTML element's attributes for handling user interactions
-  */
-
         
