@@ -26,12 +26,27 @@ const initialStories = [
     objectID: 1,
   },
 ]
+//resolve is a function arg!
+const getAsynchStories = () => 
+  new Promise((resolve) => 
+    //simulating async task and invoking resolve to resolve promise w/ a value when task complete
+    setTimeout(
+      () => resolve({data:{stories: initialStories}}),
+      2000
+    )
+  )
 
 const App = () => {
   //custom hook
   const [searchTerm, setSearchTerm] = useSemiPersistentState("search","React")
    //state hook
-   const [stories, setStories] = React.useState(initialStories)
+  const [stories, setStories] = React.useState([])
+   //Effect
+  React.useEffect(() => {
+    getAsynchStories().then(result => {
+      setStories(result.data.stories)
+    })
+  }, [])
   
   const handleSearch = (event) => {
     setSearchTerm(event.target.value)
