@@ -37,20 +37,23 @@ const getAsynchStories = () =>
   )
 
 const App = () => {
-  //custom hook
   const [searchTerm, setSearchTerm] = useSemiPersistentState("search","React")
-   //state hook
   const [stories, setStories] = React.useState([])
-   //Effect
+  const [isLoading, setIsLoading] = React.useState(false)
+  const [isError, setIsError] = React.useState(false)
+
   React.useEffect(() => {
-    getAsynchStories().then(result => {
+    setIsLoading(true)
+    getAsynchStories().then((result) => {
       setStories(result.data.stories)
+      setIsLoading(false)
     })
+    .catch(() => setIsError(true))
   }, [])
-  
+
   const handleSearch = (event) => {
     setSearchTerm(event.target.value)
-  };
+  }
   const handleRemoveStory= (item) => {
     const newStories = stories.filter(
       (story) => item.objectID !== story.objectID
@@ -61,15 +64,16 @@ const App = () => {
   const searchedStories = stories.filter(function (story) {
     return story.title.toLowerCase().includes(searchTerm.toLowerCase())
   });
-
   return (
     <div>
-          <h1> My Hacker Stories</h1>
+          <h1>My Hacker Stories</h1>
           <InputWithLabel id="search" value={searchTerm} isFocused onInputChange={handleSearch}>
             <strong>Search for:</strong>
           </InputWithLabel>
           <hr/>
-          <List list={searchedStories} onRemoveItem ={handleRemoveStory}/>{/*passing props into a component. variable assigned to the list html attribute */}
+          {isError && <p>Something went wrong...</p>}
+          {isLoading ? <p>loading</p> : <List list={searchedStories} onRemoveItem={handleRemoveStory} />}
+          {/*passing props into a component. variable assigned to the list html attribute */}
     </div>
   );
 };
