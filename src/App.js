@@ -1,4 +1,5 @@
 import * as React from 'react';
+import axios from 'axios'
 
 const useSemiPersistentState = (key, initialState) => {
   const[value, setValue] = React.useState(localStorage.getItem(key) || initialState)
@@ -8,7 +9,6 @@ const useSemiPersistentState = (key, initialState) => {
   }, [value, key])
   return [value, setValue]
 }
-
 const storiesReducer = (state, action) => {
   switch (action.type) {
     case "STORIES_FETCH_INIT":
@@ -39,7 +39,6 @@ const storiesReducer = (state, action) => {
       throw new Error();
   }
 }
-
 const API_ENDPOINT = "https://hn.algolia.com/api/v1/search?query="
 
 const App = () => {
@@ -48,27 +47,47 @@ const App = () => {
   const [stories, dispatchStories] = React.useReducer(storiesReducer, 
     { data: [], isLoading: false, isError: false }
   )
+  const [url, setUrl] = React.useState(`${API_ENDPOINT}${searchTerm}`)
+
+//useCallback hook creates a memoized function every time it dependency array changes
+//as a result the effect hook runs again bc it depends on the new function
+/*hook changes the funxtion only when the searchTerm changes */
+/* change:search term
+    implicitly change: handleFetchStories
+    run: side effect
+ */
+  const handleFetchedStories = React.useCallback(() => {
+    dispatchStories({type: "STORIES_FETCH_INIT"})
+    axios
+      //call axios.get() for an explicit HTTP GET request. This is the same HTTP GET method used with
+      //browsers native fetch API
+      .get(url)
+      //returns a promise. returned result does not need to be transormed into JSON
+      //axios wraps result into a data object 
+      .then((result) => {
+        dispatchStories({
+          type: "STORIES_FETCH_SUCCESS",
+          payload: result.data.hits,
+        })
+      })
+      .catch(() =>
+        dispatchStories({type: "STORIES_FETCH_FAILURE"})
+      )
+    }, [url])
+
+
 
   React.useEffect(() => {
-    if (!searchTerm) return
-    dispatchStories({type: "STORIES_FETCH_INIT"})
-    fetch(`${API_ENDPOINT}${searchTerm}`)
-    .then((response) => response.json())
-    .then((result) => {
-      dispatchStories({
-        type: "STORIES_FETCH_SUCCESS",
-        payload: result.hits,
-      })
-    })
-    .catch(() => 
-      dispatchStories({ type: "STORIES_FETCH_FAILURE"})
-    )
-  }, [searchTerm])
-
-  const handleSearch = (event) => {
-    setSearchTerm(event.target.value)
+    handleFetchedStories()
+  },[handleFetchedStories])
+    
+  const handleSearchInput = (e) => {
+    setSearchTerm(e.target.value)
   }
-  
+
+  const handleSearchSubmit = () => {
+    setUrl(`${API_ENDPOINT}${searchTerm}`)
+  }
   const handleRemoveStory = (item) => {
     dispatchStories({
       type: "REMOVE_STORY",
@@ -79,9 +98,11 @@ const App = () => {
   return (
     <div>
           <h1>My Hacker Stories</h1>
-          <InputWithLabel id="search" value={searchTerm} isFocused onInputChange={handleSearch}>
+          <InputWithLabel
+           id="search" value={searchTerm} isFocused onInputChange={handleSearchInput}>
             <strong>Search for:</strong>
           </InputWithLabel>
+          <button type="button" disabled={!searchTerm} onClick={handleSearchSubmit}>Submit</button>
           <hr/>
           {stories.isError && <p>Something went wrong...</p>}
           {stories.isLoading ? <p>loading</p> :
@@ -92,7 +113,6 @@ const App = () => {
 };
 //InputWithLabel component
 const InputWithLabel = ({id, value, type="text", onInputChange, isFocused, children}) => {
-  
   //ref hook. creates a ref w/propert
   const inputRef = React.useRef()
 
@@ -101,7 +121,6 @@ const InputWithLabel = ({id, value, type="text", onInputChange, isFocused, child
       inputRef.current.focus();
     }
   }, [isFocused]);
-
   return(
   <>
     <label htmlFor={id}>{children}</label> &nbsp;
