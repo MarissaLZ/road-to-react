@@ -56,26 +56,19 @@ const App = () => {
     implicitly change: handleFetchStories
     run: side effect
  */
-  const handleFetchedStories = React.useCallback(() => {
+  const handleFetchedStories = React.useCallback( async() => {
     dispatchStories({type: "STORIES_FETCH_INIT"})
-    axios
-      //call axios.get() for an explicit HTTP GET request. This is the same HTTP GET method used with
-      //browsers native fetch API
-      .get(url)
-      //returns a promise. returned result does not need to be transormed into JSON
-      //axios wraps result into a data object 
-      .then((result) => {
-        dispatchStories({
-          type: "STORIES_FETCH_SUCCESS",
-          payload: result.data.hits,
-        })
+    try {
+      const result = await axios.get(url) //returns a promise
+      //actions after await are not exectued until promise resolves
+      dispatchStories({
+        type: "STORIES_FETCH_SUCCESS",
+        payload: result.data.hits,
       })
-      .catch(() =>
-        dispatchStories({type: "STORIES_FETCH_FAILURE"})
-      )
-    }, [url])
-
-
+    } catch {
+      dispatchStories({type: "STORIES_FETCH_FAILURE"})
+    }
+  }, [url])
 
   React.useEffect(() => {
     handleFetchedStories()
