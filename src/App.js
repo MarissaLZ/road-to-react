@@ -49,10 +49,10 @@ const App = () => {
   )
   const [url, setUrl] = React.useState(`${API_ENDPOINT}${searchTerm}`)
 
-//useCallback hook creates a memoized function every time it dependency array changes
+//useCallback hook creates a memoized function every time its dependency array changes
 //as a result the effect hook runs again bc it depends on the new function
 /*hook changes the funxtion only when the searchTerm changes */
-/* change:search term
+/*
     implicitly change: handleFetchStories
     run: side effect
  */
@@ -78,8 +78,9 @@ const App = () => {
     setSearchTerm(e.target.value)
   }
 
-  const handleSearchSubmit = () => {
+  const handleSearchSubmit = (e) => {
     setUrl(`${API_ENDPOINT}${searchTerm}`)
+    e.preventDefault()
   }
   const handleRemoveStory = (item) => {
     dispatchStories({
@@ -90,20 +91,31 @@ const App = () => {
 
   return (
     <div>
-          <h1>My Hacker Stories</h1>
-          <InputWithLabel
-           id="search" value={searchTerm} isFocused onInputChange={handleSearchInput}>
-            <strong>Search for:</strong>
-          </InputWithLabel>
-          <button type="button" disabled={!searchTerm} onClick={handleSearchSubmit}>Submit</button>
-          <hr/>
-          {stories.isError && <p>Something went wrong...</p>}
-          {stories.isLoading ? <p>loading</p> :
-           <List list={stories.data} onRemoveItem={handleRemoveStory} />}
-          {/*passing props into a component. variable assigned to the list html attribute */}
+      <h1>My Hacker Stories</h1>
+      <SearchForm searchTerm={searchTerm} onSearchInput={handleSearchInput} 
+      onSearchSubmit={handleSearchSubmit}/>
+      <hr/>
+      {stories.isError && <p>Something went wrong...</p>}
+      {stories.isLoading ? <p>loading</p> :
+        <List list={stories.data} onRemoveItem={handleRemoveStory} />}
+      {/*passing props into a component. variable assigned to the list html attribute */}
     </div>
   );
 };
+
+const SearchForm = ({searchTerm, onSearchInput, onSearchSubmit}) => {
+  return(
+    <form onSubmit={onSearchSubmit}>
+      <InputWithLabel
+        id="search" value={searchTerm} isFocused onInputChange={onSearchInput}>
+        <strong>Search for:</strong>
+      </InputWithLabel>
+      <button type="submit" disabled={!searchTerm} >
+        Submit
+      </button>
+    </form>
+  )
+}
 //InputWithLabel component
 const InputWithLabel = ({id, value, type="text", onInputChange, isFocused, children}) => {
   //ref hook. creates a ref w/propert
@@ -115,7 +127,7 @@ const InputWithLabel = ({id, value, type="text", onInputChange, isFocused, child
     }
   }, [isFocused]);
   return(
-  <>
+    <>
     <label htmlFor={id}>{children}</label> &nbsp;
     <input id={id} ref={inputRef} type={type} value={value} onChange={onInputChange}/>
   </>
@@ -125,16 +137,15 @@ const InputWithLabel = ({id, value, type="text", onInputChange, isFocused, child
 //instead of props.list
 const List = ({ list, onRemoveItem}) => {
   return(
-        <ul> 
-          {list.map((item) => {
-            return(
-              //Item component
-              //passing item in each iteration
-              <Item key={item.objectID} item={item} onRemoveItem={onRemoveItem}/>
-            )
-          })}
-        </ul>
-    )
+    <ul> 
+      {list.map((item) => {
+        return(
+          //Item component
+          //passing item in each iteration
+          <Item key={item.objectID} item={item} onRemoveItem={onRemoveItem}/>
+        )})}
+    </ul>
+  )
 } 
 //Item component
 //destructures props which is an object withiin and object {item: {…}}
