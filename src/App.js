@@ -1,5 +1,6 @@
 import * as React from 'react';
 import axios from 'axios'
+import styles from "./App.module.css"
 
 const useSemiPersistentState = (key, initialState) => {
   const[value, setValue] = React.useState(localStorage.getItem(key) || initialState)
@@ -90,27 +91,32 @@ const App = () => {
 };
 
   return (
-    <div>
-      <h1>My Hacker Stories</h1>
-      <SearchForm searchTerm={searchTerm} onSearchInput={handleSearchInput} 
-      onSearchSubmit={handleSearchSubmit}/>
-      <hr/>
+    <div className={styles.container}>
+      <h1 className="headline-primary">My Hacker Stories</h1>
+      <SearchForm
+        searchTerm={searchTerm}
+        onSearchInput={handleSearchInput} 
+        onSearchSubmit={handleSearchSubmit}
+      />
       {stories.isError && <p>Something went wrong...</p>}
-      {stories.isLoading ? <p>loading</p> :
-        <List list={stories.data} onRemoveItem={handleRemoveStory} />}
+
+      {stories.isLoading ?
+        <p>loading</p> :
+        <List list={stories.data} onRemoveItem={handleRemoveStory} />
+      }
       {/*passing props into a component. variable assigned to the list html attribute */}
     </div>
   );
 };
 
 const SearchForm = ({searchTerm, onSearchInput, onSearchSubmit}) => {
-  return(
-    <form onSubmit={onSearchSubmit}>
+  return (
+    <form onSubmit={onSearchSubmit} className={styles.searchForm}>
       <InputWithLabel
         id="search" value={searchTerm} isFocused onInputChange={onSearchInput}>
         <strong>Search for:</strong>
       </InputWithLabel>
-      <button type="submit" disabled={!searchTerm} >
+      <button type="submit" disabled={!searchTerm} className={`${styles.button} ${styles.buttonLarge}`} >
         Submit
       </button>
     </form>
@@ -126,10 +132,13 @@ const InputWithLabel = ({id, value, type="text", onInputChange, isFocused, child
       inputRef.current.focus();
     }
   }, [isFocused]);
-  return(
+  return (
     <>
-    <label htmlFor={id}>{children}</label> &nbsp;
-    <input id={id} ref={inputRef} type={type} value={value} onChange={onInputChange}/>
+    <label htmlFor={id} className={styles.label}>
+      {children}
+      </label>
+      &nbsp;
+    <input id={id} ref={inputRef} type={type} value={value} onChange={onInputChange} className={styles.input}/>
   </>
   )
 }
@@ -151,15 +160,22 @@ const List = ({ list, onRemoveItem}) => {
 //destructures props which is an object withiin and object {item: {…}}
 const Item = ({ item, onRemoveItem }) => {
   return(
-    <li>
-      <span>
+    <li className={styles.item}>
+      <span style={{width: "40%"}}>
         <a href={item.url}>{item.title}</a>
       </span>
-      <span>{item.author}</span>
-      <span>{item.num_comments}</span>
-      <span>{item.points}</span>
-      <span>
-        <button type="button" onClick={() => onRemoveItem(item) }>Dismiss</button>
+      <span style={{ width: "30%"}}>{item.author}</span>
+      <span style={{ width: "10%"}}>{item.num_comments}</span>
+      <span style={{ width: "10%"}}>{item.points}</span>
+      <span style={{ width: "10%"}}>
+        <button
+          type="button"
+          onClick={() => onRemoveItem(item)}
+          className= {`${styles.button} ${styles.buttonSmall}`} 
+          //applies 2 classes to button
+        >
+          Dismiss
+        </button>
       </span>
     </li>
   );
